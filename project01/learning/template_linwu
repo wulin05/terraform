@@ -1,0 +1,12 @@
+modules/
+   vpc/
+      main.tf
+      variables.tf
+
+environments/
+   dev/
+      main.tf
+      terraform.tfvars
+   prod/
+      main.tf
+      terraform.tfvars

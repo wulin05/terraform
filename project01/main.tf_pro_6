@@ -1,0 +1,46 @@
+provider "aws" {
+  
+}
+
+// 自定义参数
+variable "vpc_cidr_block" {
+  type = string
+}
+
+variable "subnet_cidr_blocks" {
+  description = "vpc and subnet cidr block"
+  // default: 如果.tfvars文件中没有相关定义值,那么使用default定义值
+  type = list(object({
+    name = string
+    cidr_block = string
+  }))
+}
+
+variable "environment" {
+  description = "deployment environment"
+  type        = string
+}
+
+resource "aws_vpc" "development" {
+  cidr_block = var.vpc_cidr_block
+  tags = {
+    Name = "Tokyo-${var.environment}-vpc"
+  }
+}
+
+data "aws_availability_zones" "az" {}
+
+resource "aws_subnet" "dev_subnet" {
+  count = length(data.aws_availability_zones.az.names)
+
+  vpc_id = aws_vpc.development.id
+  availability_zone = data.aws_availability_zones.az.names[count.index]
+  cidr_block = var.subnet_cidr_blocks[count.index].cidr_block
+  tags = {
+    Name = "${var.environment}-subnet${count.index + 1}"
+  }
+}
+
+output "azs" {
+  value = data.aws_availability_zones.az.names
+}

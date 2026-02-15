@@ -1,0 +1,29 @@
+provider "aws" {
+  
+}
+
+// 创建新的vpc,名为development-vpc
+resource "aws_vpc" "development_vpc" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name: "Tokyo-vpc03-dev"
+  }
+}
+
+// 通过data定义获取当前的Region有哪些available_zones（从下面调用的方法,可以看出结果是列表）
+data "aws_availability_zones" "available" {}
+
+// 这部分是chatGpt教的
+resource "aws_subnet" "dev_subnets" {
+  count = length(data.aws_availability_zones.available.names)
+  vpc_id            = aws_vpc.development_vpc.id
+  cidr_block        = cidrsubnet("10.0.0.0/16", 8, count.index)
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+  tags = {
+    Name = "dev-subnet-${count.index + 1}"
+  }
+}
+
+output "aws_availability_zones" {
+  value = data.aws_availability_zones.available.names
+}

@@ -1,0 +1,43 @@
+provider "aws" {
+  
+}
+
+// 自定义参数
+variable "cidr_blocks" {   // 这种将vpc和subnet的网段写到一个list的方式非常不推荐,建议分开
+  description = "cidr blocks for vpc and subnets"
+  type = list(string)
+}
+
+variable "environment" {
+  description = "deployment environment"
+  type        = string
+}
+
+
+// 创建新的vpc,名为Tokyo-dev-vpc
+resource "aws_vpc" "development_vpc" {
+  # cidr_block = "10.0.0.0/16"
+  // 使用上面的自定义参数,有三种赋值的方法:①terraform apply ②terraform apply -var "vpc_cidr_block=10.0.0.0/16" ③使用terraform.tfvars文件
+  cidr_block = var.cidr_blocks[0]  
+  tags = {
+    Name = "Tokyo-${var.environment}-vpc"
+  }
+}
+
+// 通过data定义获取当前的Region有哪些available_zones（从下面调用的方法,可以看出结果是列表）
+data "aws_availability_zones" "available" {}
+
+// 这部分是chatGpt教的: 在当前Region下,使用到3个可用区（这是生产的正常思路，一般不会跟main.tf_3那样，每个可用区都创建一个subnet，一般都是是明确要用到哪些可用区）
+resource "aws_subnet" "dev_subnets" {
+  count = length(var.cidr_blocks) - 1
+  vpc_id            = aws_vpc.development_vpc.id
+  cidr_block        = var.cidr_blocks[count.index + 1]
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+  tags = {
+    Name = "${var.environment}-subnet${count.index + 1}"
+  }
+}
+
+output "aws_availability_zones" {
+  value = data.aws_availability_zones.available.names
+}

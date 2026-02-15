@@ -1,0 +1,78 @@
+provider "aws" {
+  
+}
+
+// 创建新的vpc,名为development-vpc
+resource "aws_vpc" "development_vpc" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name: "Tokyo-vpc03-dev"
+  }
+}
+
+
+// 通过data定义获取available_zones有哪些（从下面调用的方法,可以看出结果是列表）
+data "aws_availability_zones" "available" {}
+
+// 这部分是chatGpt教的
+resource "aws_subnet" "dev_subnets" {
+  count = length(data.aws_availability_zones.available.names)
+  vpc_id            = aws_vpc.development_vpc.id
+  cidr_block        = cidrsubnet("10.0.0.0/16", 8, count.index)
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+}
+
+# resource "aws_subnet" "dev-subnet-1" {
+#   cidr_block = "10.0.10.0/24"
+#   vpc_id = aws_vpc.development-vpc.id
+#   availability_zone = data.aws_availability_zones.available.names[0]
+#   tags = {
+#     Name: "subnet-1-dev"
+#   }
+# }
+
+
+# // 通过data定义获取已经存在的vpc，tag name为My-Tokyo-vpc02的VPC信息
+# data "aws_vpc" "existing_vpc" {
+#   /*default = true*/
+#   filter {
+#     name = "tag:Name"
+#     values = [ "My-Tokyo-vpc02" ]
+#   }
+# }
+
+# // 创建新的subnet: dev-subnet-2，在上面的existing_vpc的VPC中去创建的。
+# resource "aws_subnet" "dev-subnet-2" {
+#   vpc_id = data.aws_vpc.existing_vpc.id  // 就是用这个来调用上面的data获取的VPC
+#   # vpc_id = data.aws_vpcs.existing_vpc.ids[0]  // 就是用这个来调用上面的data获取的VPC
+
+#   cidr_block = "192.168.10.0/24"
+#   availability_zone = data.aws_availability_zones.available.names[1]
+#   tags = {
+#     Name: "subnet-2-vpc02"
+#   }
+# }
+
+# output "dev-vpc-id" {
+#   value = aws_vpc.development-vpc.id
+# }
+
+# output "availability_zones" {
+#   value = data.aws_availability_zones.available.names
+# }
+
+# output "dev-subnet-1-id" {
+#   value = aws_subnet.dev-subnet-1.id
+# }
+
+# output "existing_vpc" {
+#   value = data.aws_vpc.existing_vpc.state
+# }
+
+# output "dev-subnet-2_avail-zone" {
+#   value = aws_subnet.dev-subnet-2.availability_zone
+# }
+
+# output "dev-subnet-2_vpc-id" {
+#   value = aws_subnet.dev-subnet-2.vpc_id
+# }

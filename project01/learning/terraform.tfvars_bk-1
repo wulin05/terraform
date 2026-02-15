@@ -1,0 +1,5 @@
+// 这个备份文件是main.tf_5的测试用的
+// main.tf里定义的参数，在这边可以赋值
+// 如果文件名是terraform.tfvars的话,直接terraform apply，不用指定文件，但是这种情况需要 -var-file terraform-dev.tfvars 指定文件了
+cidr_blocks = [ "10.0.0.0/16", "10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24" ]
+environment = "dev"

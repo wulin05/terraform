@@ -1,0 +1,12 @@
+# local .terraform dir
+.terraform/
+
+# tf state files
+*.tfstate
+*.tfstate.*
+
+# 下面外教说应该要提交...
+#.terraform.lock.hcl
+
+# tf variable files, may include sensitive data; but this is my learning file,so it doesn't matter
+#*.tfvars

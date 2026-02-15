@@ -168,17 +168,6 @@ resource "aws_instance" "myapp_server" {
   # key_name = "WSL_AlmaLinux9_terraform"    // this key pair(.pem format) is created in aws plane
   key_name = aws_key_pair.ssh_key.key_name   // when create resource "aws_key_pair" "ssh_key", please use this method.
 
-  // this is bash command which can be run on the ec2 start...
-  # user_data = <<EOF
-  #                 #!/bin/bash
-  #                 sudo yum update -y && sudo yum install -y docker
-  #                 sudo systemctl start docker
-  #                 sudo usermod -aG docker ec2-user
-  #                 docker run -p 8080:80 nginx
-  #             EOF
-  // also, command is directly write here is not good idea,so:
-  user_data = file("entry-script.sh")
-
   tags = {
     Name = "${var.env_prefix}-myapp-server"
   }

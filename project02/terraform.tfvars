@@ -8,6 +8,10 @@ env_prefix = "dev"
 
 acc_security_cidr= [
     {cidr_block = "153.162.132.190/32", name = "library"},
-    {cidr_block = "xxx.xxx.xxx.xxx/32", name = "home"},
+    {cidr_block = "126.88.204.205/32", name = "home"},
     {cidr_block = "xxx.xxx.xxx.xxx/32", name = "workstation"}
 ]
+
+instance_type = "t2.nano"
+
+public_key_location = "/home/Admin05/.ssh/id_ed25519.pub"

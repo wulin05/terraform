@@ -59,7 +59,7 @@ resource "aws_route_table_association" "a_rtb_subnet" {
 }
 
 /*
-// if we use default route table, just like follow:
+// if we use default route table to modify, just like follow:
 // also if use this setting, aws_route_table_association resource isn't necessary.
 resource "aws_default_route_table" "main_rtb" {
   // 可以通过: terraform state show aws_vpc.myapp-vpc 来查到上面创建的vpc同时会自动创建的默认route table id的字段名：default_route_table_id

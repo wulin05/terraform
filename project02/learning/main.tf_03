@@ -29,19 +29,15 @@ variable "instance_type" {
   type = string
 }
 
-variable "public_key_location" {
-  type = string
-}
-
-resource "aws_vpc" "myapp_vpc" {
+resource "aws_vpc" "myapp-vpc" {
   cidr_block = var.vpc_cidr_block
   tags = {
     Name = "${var.env_prefix}-vpc"
   }
 }
 
-resource "aws_subnet" "myapp_subnet_1" {
-  vpc_id = aws_vpc.myapp_vpc.id
+resource "aws_subnet" "myapp-subnet-1" {
+  vpc_id = aws_vpc.myapp-vpc.id
   cidr_block = var.subnet_cidr_block
   availability_zone = var.avail_zone
   tags = {
@@ -50,7 +46,7 @@ resource "aws_subnet" "myapp_subnet_1" {
 }
 
 resource "aws_internet_gateway" "myapp_igw" {
-  vpc_id = aws_vpc.myapp_vpc.id
+  vpc_id = aws_vpc.myapp-vpc.id
   tags = {
     Name = "${var.env_prefix}-igw"
   }
@@ -59,7 +55,7 @@ resource "aws_internet_gateway" "myapp_igw" {
 // so we use default route table, no need to creating new one
 resource "aws_default_route_table" "main_rtb" {
   // 可以通过: terraform state show aws_vpc.myapp-vpc 来查到上面创建的vpc同时会自动创建的默认route table id的字段名：default_route_table_id
-  default_route_table_id = aws_vpc.myapp_vpc.default_route_table_id
+  default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
   
   // 注意没有用 route = {}
   route {  
@@ -74,7 +70,7 @@ resource "aws_default_route_table" "main_rtb" {
 // Locate the existing default security group in this VPC, then let Terraform take over it and modify the rules.
 // but in real production environment we suggest create new security group to modify the rules.
 resource "aws_default_security_group" "default_myapp_sg" {
-  vpc_id = aws_vpc.myapp_vpc.id
+  vpc_id = aws_vpc.myapp-vpc.id
 
   ingress {
     from_port = 22
@@ -145,24 +141,17 @@ output "aws_ami_id" {
   # value = data.aws_ssm_parameter.al2023.id
 }
 
-// if you use ssh public key by generated in local, please create this resource.
-resource "aws_key_pair" "ssh_key" {
-  key_name = "local_generate_pub_key"
-  public_key = file(var.public_key_location)
-}
-
-resource "aws_instance" "myapp_server" {
+resource "aws_instance" "myapp-server" {
   ami = data.aws_ami.lastest_amazon_linux_image.id
   instance_type = var.instance_type
 
-  subnet_id = aws_subnet.myapp_subnet_1.id
+  subnet_id = aws_subnet.myapp-subnet-1.id
   vpc_security_group_ids = [aws_default_security_group.default_myapp_sg.id]
   // availability_zone不用写,因为subnet里面已经有avail_zone的信息了：ap-northeast-1a
-  availability_zone = var.avail_zone  // as the reason above, this is not necessary.
+  availability_zone = var.avail_zone  // 如上所述,这个是多此一举.
 
   associate_public_ip_address = true
-  # key_name = "WSL_AlmaLinux9_terraform"    // this key pair(.pem format) is created in aws plane
-  key_name = aws_key_pair.ssh_key.key_name   // when create resource "aws_key_pair" "ssh_key", please use this method.
+  key_name = "WSL_AlmaLinux9_terraform"
 
   tags = {
     Name = "${var.env_prefix}-myapp-server"

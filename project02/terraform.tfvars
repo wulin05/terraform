@@ -6,4 +6,8 @@ avail_zone = "ap-northeast-1a"
 
 env_prefix = "dev"
 
-
+acc_security_cidr= [
+    {cidr_block = "153.162.132.190/32", name = "library"},
+    {cidr_block = "xxx.xxx.xxx.xxx/32", name = "home"},
+    {cidr_block = "xxx.xxx.xxx.xxx/32", name = "workstation"}
+]

@@ -18,13 +18,6 @@ variable "env_prefix" {
   type = string
 }
 
-variable "acc_security_cidr" {
-  type = list(object({
-    name = string
-    cidr_block = string
-  }))
-}
-
 resource "aws_vpc" "myapp-vpc" {
   cidr_block = var.vpc_cidr_block
   tags = {
@@ -48,7 +41,26 @@ resource "aws_internet_gateway" "myapp_igw" {
   }
 }
 
-// so we use default route table, no need to creating new one
+// That create new route table for using, not use default table default creating by system...
+resource "aws_route_table" "myapp-route-table" {
+  vpc_id = aws_vpc.myapp-vpc.id
+  route {  // 注意没有用 route = {}
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.myapp_igw.id
+  }
+  tags = {
+    Name = "${var.env_prefix}-rtb"
+  }
+}
+
+resource "aws_route_table_association" "a_rtb_subnet" {
+  route_table_id = aws_route_table.myapp-route-table.id
+  subnet_id = aws_subnet.myapp-subnet-1.id
+}
+
+/*
+// if we use default route table, just like follow:
+// also if use this setting, aws_route_table_association resource isn't necessary.
 resource "aws_default_route_table" "main_rtb" {
   // 可以通过: terraform state show aws_vpc.myapp-vpc 来查到上面创建的vpc同时会自动创建的默认route table id的字段名：default_route_table_id
   default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
@@ -59,13 +71,14 @@ resource "aws_default_route_table" "main_rtb" {
     gateway_id = aws_internet_gateway.myapp_igw.id
   }
   tags = {
-    Name = "${var.env_prefix}-main-rtb"
+    Name = "${var.env_prefix}-default-rtb"
   }
 }
+*/
 
-// Locate the existing default security group in this VPC, then let Terraform take over it and modify the rules.
-// but in real production environment we suggest create new security group to modify the rules.
-resource "aws_default_security_group" "default_myapp_sg" {
+// create a new security group to allow inbound and outbound network traffic 
+resource "aws_security_group" "myapp_sg" {
+  name = "myapp-sg"
   vpc_id = aws_vpc.myapp-vpc.id
 
   ingress {
@@ -73,7 +86,6 @@ resource "aws_default_security_group" "default_myapp_sg" {
     to_port = 22
     protocol = "tcp"
     cidr_blocks = [var.acc_security_cidr[0].cidr_block]
-    description = "Private_SSH"
   }
 
   // allow any others can access this nginx server port
@@ -89,10 +101,19 @@ resource "aws_default_security_group" "default_myapp_sg" {
     to_port = 0
     protocol = "-1"
     cidr_blocks = ["0.0.0.0/0"] 
-    prefix_list_ids = []  
+    prefix_list_ids = []  // 可以不用,只是为了知道有这个东西
+    /*
+      下面的只是示例，如果要这么写，必须在外面定义一个data
+      prefix_list_ids = [data.aws_prefix_list.s3.id]
+
+      data "aws_prefix_list" "s3" {
+        name = "com.amazonaws.ap-northeast-1.s3"
+      }
+    */
   }
 
   tags = {
-    Name = "${var.env_prefix}-default-sg"
+    Name = "${var.env_prefix}-sg"
   }
 }
+

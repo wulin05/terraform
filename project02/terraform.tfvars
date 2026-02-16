@@ -15,3 +15,4 @@ acc_security_cidr= [
 instance_type = "t2.nano"
 
 public_key_location = "/home/Admin05/.ssh/id_ed25519.pub"
+private_key_location = "/home/Admin05/.ssh/id_ed25519"

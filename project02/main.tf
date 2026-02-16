@@ -33,6 +33,10 @@ variable "public_key_location" {
   type = string
 }
 
+variable "private_key_location" {
+  type = string
+}
+
 resource "aws_vpc" "myapp_vpc" {
   cidr_block = var.vpc_cidr_block
   tags = {
@@ -150,7 +154,7 @@ output "ec2_public_ip" {
 }
 
 // if you use ssh public key by generated in local, please create this resource.
-resource "aws_key_pair" "ssh_key" {
+resource "aws_key_pair" "ssh_public_key" {
   key_name = "local_generate_pub_key"
   public_key = file(var.public_key_location)
 }
@@ -166,9 +170,9 @@ resource "aws_instance" "myapp_server" {
 
   associate_public_ip_address = true
   # key_name = "WSL_AlmaLinux9_terraform"    // this key pair(.pem format) is created in aws plane
-  key_name = aws_key_pair.ssh_key.key_name   // when create resource "aws_key_pair" "ssh_key", please use this method.
+  key_name = aws_key_pair.ssh_public_key.key_name   // when create resource "aws_key_pair" "ssh_key", please use this method.
 
-  // this is bash command which can be run on the ec2 start...
+  //一.this is bash command which can be run on the ec2 start...
   # user_data = <<EOF
   #                 #!/bin/bash
   #                 sudo yum update -y && sudo yum install -y docker
@@ -176,8 +180,23 @@ resource "aws_instance" "myapp_server" {
   #                 sudo usermod -aG docker ec2-user
   #                 docker run -p 8080:80 nginx
   #             EOF
-  // also, command is directly write here is not good idea,so:
-  user_data = file("entry-script.sh")
+  //二.also, command is directly write above is not good idea,so:
+  # user_data = file("entry-script.sh")
+  //三. before excute script,it must use connection key setting to let terraform can connect ec2 after ec2 ready,if network is terrible or delay, it will fail.
+  connection {
+    type = "ssh"
+    host = self.public_ip
+    user = "ec2-user"
+    // note: use this private key to decryption ssh connection
+    private_key = file(var.private_key_location)
+  }
+
+  provisioner "remote-exec" {
+    inline = [ 
+      "export ENV=dev",
+      "mkdir newidr"
+     ]
+  }
 
   tags = {
     Name = "${var.env_prefix}-myapp-server"

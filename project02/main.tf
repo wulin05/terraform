@@ -180,7 +180,7 @@ resource "aws_instance" "myapp_server" {
   #                 sudo usermod -aG docker ec2-user
   #                 docker run -p 8080:80 nginx
   #             EOF
-  //二.also, command is directly write above is not good idea,so:
+  //二.Recommend: command is directly write above is not good idea,so:
   # user_data = file("entry-script.sh")
   //三. provisioner can excute script after ec2 ready,but must use connection, and if network is terrible or delay, it will fail.
   connection {

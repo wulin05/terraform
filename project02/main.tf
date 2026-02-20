@@ -129,7 +129,7 @@ resource "aws_instance" "myapp_server" {
 
   // Terraform 会按照resource 里写的顺序执行 provisioner。"file","remote-exec"是Terraform内置provisioner插件的类型标识，不能改。
   provisioner "file" {
-    source = "entry-script.sh"  // file的用途是将本地的entry-script.sh复制到ec2
+    source = "./script/entry-script.sh"  // file的用途是将本地的entry-script.sh复制到ec2
     destination = "/home/ec2-user/aws-entry-script.sh"
   }
 
@@ -147,7 +147,7 @@ resource "aws_instance" "myapp_server" {
     #   "mkdir newidr"
     #  ]
     // 如果只是执行本地的这个.sh文件，script = "xxx.sh" 会自动把本地脚本上传到远程临时目录，然后执行。
-    script = "entry-script.sh"
+    script = "./script/entry-script.sh"
     // 或者执行多个本地sh脚本，本质是将这些脚本上传到ec2的临时目录/tmp/,然后执行完成后删除脚本
     # scripts = ["a.sh", "b.sh"]
   }
@@ -155,7 +155,7 @@ resource "aws_instance" "myapp_server" {
   /* 
   //案例：通过本地写好的entry-script.sh脚本给ec2安装docker
   provisioner "remote-exec" {
-    script = "entry-script.sh"
+    script = "./script/entry-script.sh"
   }
 
   // 然后将本地写好应用的docker-compose(多个文件)通过"file"来拷贝到用户目录下的app目录里
@@ -173,7 +173,7 @@ resource "aws_instance" "myapp_server" {
   }
 
   // 但不推荐，更好的做法是就是用user-data
-  user_data = file("bootstrap.sh")
+  user_data = file("./script/bootstrap.sh")
   */
 
   provisioner "local-exec" {

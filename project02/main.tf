@@ -108,16 +108,19 @@ resource "aws_instance" "myapp_server" {
   # key_name = "WSL_AlmaLinux9_terraform"    // this key pair(.pem format) is created in aws plane
   key_name = aws_key_pair.ssh_public_key.key_name   // when create resource "aws_key_pair" "ssh_key", please use this method.
 
+/*
   //一.this is bash command which can be run on the ec2 start.
-  # user_data = <<EOF
-  #                 #!/bin/bash
-  #                 sudo yum update -y && sudo yum install -y docker
-  #                 sudo systemctl start docker
-  #                 sudo usermod -aG docker ec2-user
-  #                 docker run -p 8080:80 nginx
-  #             EOF
+  user_data = <<EOF
+              #!/bin/bash
+              sudo yum update -y && sudo yum install -y docker
+              sudo systemctl start docker
+              sudo usermod -aG docker ec2-user
+              docker run -p 8080:80 nginx
+            EOF
   //二.also, command is directly write above is not good idea,so:
-  # user_data = file("entry-script.sh")
+   user_data = file("entry-script.sh")
+*/
+
   //三. provisioner can excute script after ec2 ready,but must use connection, and if network is terrible or delay, it will fail.
   connection {
     type = "ssh"
@@ -141,6 +144,7 @@ resource "aws_instance" "myapp_server" {
      ]
   }
 
+/*
   provisioner "remote-exec" {
     # inline = [ 
     #   "export ENV=dev",
@@ -151,8 +155,9 @@ resource "aws_instance" "myapp_server" {
     // 或者执行多个本地sh脚本，本质是将这些脚本上传到ec2的临时目录/tmp/,然后执行完成后删除脚本
     # scripts = ["a.sh", "b.sh"]
   }
+*/
 
-  /* 
+/* 
   //案例：通过本地写好的entry-script.sh脚本给ec2安装docker
   provisioner "remote-exec" {
     script = "./script/entry-script.sh"
@@ -174,7 +179,7 @@ resource "aws_instance" "myapp_server" {
 
   // 但不推荐，更好的做法是就是用user-data
   user_data = file("./script/bootstrap.sh")
-  */
+*/
 
   provisioner "local-exec" {
     command = "echo ${self.public_ip} > output_ip.txt"

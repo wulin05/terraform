@@ -1,7 +1,8 @@
 // Locate the existing default security group in this VPC, then let Terraform take over it and modify the rules.
 // but in real production environment we suggest create new security group to modify the rules.
-resource "aws_default_security_group" "default_myapp_sg" {
+resource "aws_security_group" "myapp_sg" {
   vpc_id = var.vpc_id
+  name = "myapp-sg"
 
   ingress {
     from_port = 22
@@ -35,7 +36,7 @@ resource "aws_default_security_group" "default_myapp_sg" {
   }
 
   tags = {
-    Name = "${var.env_prefix}-default-sg"
+    Name = "${var.env_prefix}-myapp-sg"
   }
 }
 
@@ -82,7 +83,7 @@ resource "aws_instance" "myapp_server" {
 #   subnet_id = module.myapp_subnet.subnet_id
   subnet_id = var.subnet_id
 
-  vpc_security_group_ids = [aws_default_security_group.default_myapp_sg.id]
+  vpc_security_group_ids = [aws_security_group.myapp_sg.id]
   // availability_zone不用写,因为subnet里面已经有avail_zone的信息了：ap-northeast-1a
 #   availability_zone = var.avail_zone  // as the reason above, this is not necessary.
 

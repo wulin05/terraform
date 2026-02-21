@@ -2,31 +2,44 @@ provider "aws" {
   
 }
 
-resource "aws_vpc" "myapp_vpc" {
-  cidr_block = var.vpc_cidr_block
+// use module "vpc" which terraform provided to create vpc more simplely: less code
+// in the background, subnet,internet gateway,route table that basically be configured.
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+
+  name = "my-vpc"
+  cidr = var.vpc_cidr_block
+
+  azs             = [var.avail_zone]
+  public_subnets  = [var.public_subnet_cidr_block]
+  private_subnets = [var.private_subnet_cidr_block]
+
+  public_subnet_tags = {
+    Name = "${var.env_prefix}_public_subnet01"
+  }
+  private_subnet_tags = {
+    Name = "${var.env_prefix}_private_subnet01"
+  }
+
+  // Don't use it casually, especially nat_gateway: fixed at 32$/M + traffic
+  # enable_nat_gateway = true
+  # enable_vpn_gateway = true
+
   tags = {
-    Name = "${var.env_prefix}-vpc"
+    Name = "${var.env_prefix}_vpc"
   }
 }
 
-module "myapp_subnet" {
-  source = "./modules/subnet"  // ./表示跟当前文件main.tf同级
-  subnet_cidr_block = var.subnet_cidr_block
-  avail_zone = var.avail_zone
-  env_prefix = var.env_prefix
-  vpc_id = aws_vpc.myapp_vpc.id
-  default_route_table_id = aws_vpc.myapp_vpc.default_route_table_id
-}
 
 module "myapp_webserver" {
   source = "./modules/webserver"
-  vpc_id = aws_vpc.myapp_vpc.id
+  vpc_id = module.vpc.vpc_id
   env_prefix = var.env_prefix
   public_key_location = var.public_key_location
   acc_security_cidr = var.acc_security_cidr
   instance_type = var.instance_type
   private_key_location = var.private_key_location
   image_name = var.image_name
-  // 不能在子模块直接调用另外一个子模块的output.tf的参数,只能通过主main来传递
-  subnet_id = module.myapp_subnet.subnet_id
+  // 之前是自建module/subnet,现在是通过上面使用terraform提供的"vpc"模块：terraform-aws-modules/vpc
+  subnet_id = module.vpc.public_subnets[0]
 }

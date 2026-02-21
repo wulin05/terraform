@@ -114,13 +114,13 @@ resource "aws_instance" "myapp_server" {
   user_data = file("${path.root}/script/entry-script.sh")
 
   //三. provisioner can excute script after ec2 ready,but must use connection, and if network is terrible or delay, it will fail.
-  connection {
-    type = "ssh"
-    host = self.public_ip
-    user = "ec2-user"
-    // note: connection use private key to decryption ssh connection
-    private_key = file(var.private_key_location)
-  }
+  # connection {
+  #   type = "ssh"
+  #   host = self.public_ip
+  #   user = "ec2-user"
+  #   // note: connection use private key to decryption ssh connection
+  #   private_key = file(var.private_key_location)
+  # }
 
 /*
   // Terraform 会按照resource 里写的顺序执行 provisioner。"file","remote-exec"是Terraform内置provisioner插件的类型标识，不能改

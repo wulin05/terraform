@@ -111,7 +111,7 @@ resource "aws_instance" "myapp_server" {
   file("${path.root}/script/entry-script.sh"),  反正善用：${path.module}，${path.root} 这两个位置参数
 */
   //将下面的connction 和 provisioner 都注释掉, 极度不建议,官网也告知是 最后的手段用provisioner,所以请用user_data
-  user_data = file("${path.root/script/entry-script.sh}")
+  user_data = file("${path.root}/script/entry-script.sh")
 
   //三. provisioner can excute script after ec2 ready,but must use connection, and if network is terrible or delay, it will fail.
   connection {

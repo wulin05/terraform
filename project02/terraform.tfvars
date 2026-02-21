@@ -16,3 +16,5 @@ instance_type = "t2.nano"
 
 public_key_location = "/home/Admin05/.ssh/id_ed25519.pub"
 private_key_location = "/home/Admin05/.ssh/id_ed25519"
+
+image_name = "al2023-ami-*-kernel-6.1-x86_64"

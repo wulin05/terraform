@@ -10,3 +10,14 @@
 
 # tf variable files, may include sensitive data; but this is my learning file,so it doesn't matter
 #*.tfvars
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore Mac/OSX system file, with the folder metadata
+.DS_Store
+
+# Ignore crash logs
+crash.log
+

@@ -32,3 +32,7 @@ variable "public_key_location" {
 variable "private_key_location" {
   type = string
 }
+
+variable "image_name" {
+  type = string
+}

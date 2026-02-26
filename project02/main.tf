@@ -60,7 +60,7 @@ resource "aws_internet_gateway" "myapp_igw" {
   }
 }
 
-// so we use default route table, no need to creating new one
+// so we use default route table, no need to creating new one. 使用了默认的route table,只要添加网关，不需要像自己创建的route table那样,还要再去创建aws_route_table_association这个资源了~
 resource "aws_default_route_table" "main_rtb" {
   // 可以通过: terraform state show aws_vpc.myapp-vpc 来查到上面创建的vpc同时会自动创建的默认route table id的字段名：default_route_table_id
   default_route_table_id = aws_vpc.myapp_vpc.default_route_table_id

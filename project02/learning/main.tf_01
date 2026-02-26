@@ -53,6 +53,7 @@ resource "aws_route_table" "myapp-route-table" {
   }
 }
 
+// Remembered that if use a new route table resource, aws_route_table_association resource must be necessary.
 resource "aws_route_table_association" "a_rtb_subnet" {
   route_table_id = aws_route_table.myapp-route-table.id
   subnet_id = aws_subnet.myapp-subnet-1.id

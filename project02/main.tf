@@ -77,6 +77,7 @@ resource "aws_default_route_table" "main_rtb" {
 
 // Locate the existing default security group in this VPC, then let Terraform take over it and modify the rules.
 // but in real production environment we suggest create new security group to modify the rules.
+// 其实就是生产环境下,默认sg规则清空,创建多个sg定义不同的rule,比如web-sg：8080，443； DB-sg：mysql,postgrey等端口。AWS的EC2的一个ENI（网卡）默认（可提升）可关联5个sg.
 resource "aws_default_security_group" "default_myapp_sg" {
   vpc_id = aws_vpc.myapp_vpc.id
 
